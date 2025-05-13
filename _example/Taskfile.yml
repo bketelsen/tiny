@@ -1,0 +1,64 @@
+# https://taskfile.dev
+
+version: "3"
+
+env:
+  GO111MODULE: on
+  GOPROXY: https://proxy.golang.org,direct
+
+tasks:
+
+  setup:
+    desc: Install dependencies
+    cmds:
+      - go mod tidy
+
+  build:
+    desc: Build the binary
+    sources:
+      - ./**/*.go
+    generates:
+      - ./search
+    cmds:
+      - go build ./cmd/search
+
+  install:
+    desc: Install the binary locally
+    sources:
+      - ./**/*.go
+    cmds:
+      - go install ./cmd/search 
+
+  test:
+    desc: Run tests
+    cmds:
+      - go test -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt ./...  -timeout=15m
+
+  cover:
+    desc: Open the cover tool
+    cmds:
+      - go tool cover -html=coverage.txt
+
+  ci:
+    desc: Run all CI steps
+    cmds:
+      - task: build
+      - task: test
+
+  default:
+    desc: Runs the default tasks
+    cmds:
+      - task: ci
+
+  run:
+    desc: Run the service
+    deps:
+      - build
+    cmds:
+      - ./search
+
+  clean:
+    desc: Clean the project	
+    cmds:
+      - rm ./search
+

@@ -79,12 +79,9 @@ func ServiceTemplate() []byte {
 
 import (
 	"{{.Module}}/handlers"
-	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"strings"
-	"time"
 
   "github.com/bketelsen/tiny/service"
 	"github.com/nats-io/nats.go"
@@ -163,7 +160,7 @@ import (
 }
 
 func ServiceClientTemplate() []byte {
-	return []byte(`// Package {{.Module}} defines the types and interfaces for the {{.Def.Name}} service
+	return []byte(`// Package {{.Module}} defines the types and interfaces for the {{.Service.Name}} service
 package {{.Module}}
 
 
