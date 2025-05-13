@@ -2,21 +2,26 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"log"
 	"os"
+	"time"
 
 	"github.com/nats-io/nats.go"
+
+	"github.com/nats-io/nats.go/jetstream"
 	"github.com/nats-io/nats.go/micro"
 )
 
 // NatsMicro is a wrapper around nats.Conn that provides a microservice interface.
 
 type TinyService struct {
-	nc   *nats.Conn
-	svc  micro.Service
-	sigs chan os.Signal
-	done chan bool
+	nc     *nats.Conn
+	svc    micro.Service
+	sigs   chan os.Signal
+	done   chan bool
+	config jetstream.KeyValue
 
 	groupName string
 	group     micro.Group
@@ -168,7 +173,7 @@ func (nm *TinyService) Init() error {
 		nm.group = nm.svc.AddGroup(nm.groupName)
 		log.Printf("Group %s created", nm.groupName)
 	}
-	return err
+	return nm.CreateConfig()
 }
 
 func (nm *TinyService) RunBlocking() error {
@@ -193,4 +198,41 @@ func (nm *TinyService) Stop() {
 			log.Printf("Error stopping service: %v", err)
 		}
 	}
+}
+
+func (nm *TinyService) CreateConfig() error {
+	if nm.svc == nil {
+		return nil
+	}
+	if nm.nc == nil {
+		return nil
+	}
+	js, err := jetstream.New(nm.nc)
+	if err != nil {
+		log.Println("Error creating JetStream: ", err)
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	kv, err := js.CreateOrUpdateKeyValue(ctx, jetstream.KeyValueConfig{
+		Bucket: nm.configBucket(),
+	})
+	if err != nil {
+		log.Println("Error creating KeyValue store: ", err)
+	}
+	log.Println("Config store created: ", kv.Bucket())
+	nm.config = kv
+	return nil
+}
+
+func (nm *TinyService) configBucket() string {
+	return "tiny_config_" + nm.Name
+}
+
+func (nm *TinyService) ConfigStore() (jetstream.KeyValue, error) {
+	if nm.config == nil {
+		return nil, errors.New("config not initialized")
+	}
+	return nm.config, nil
 }

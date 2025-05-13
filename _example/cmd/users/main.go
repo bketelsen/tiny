@@ -48,7 +48,7 @@ func main() {
 	log.Println("Service initialized")
 
 	// User handler
-	userHandler := handlers.NewUser(nc)
+	userHandler := handlers.NewUser(nc, nm)
 	// register UserHandler
 
 	nm.AddEndpoint("UserGet", micro.HandlerFunc(userHandler.Get))

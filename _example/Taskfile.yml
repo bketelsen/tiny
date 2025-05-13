@@ -62,3 +62,8 @@ tasks:
     cmds:
       - rm ./users
 
+  types:
+    desc: Regenerate types
+    cmds:
+      - tiny gen --types
+

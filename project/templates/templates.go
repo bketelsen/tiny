@@ -29,11 +29,9 @@ import (
   "encoding/json"
   "log"
 
+	"github.com/bketelsen/tiny/service"
  	"github.com/nats-io/nats.go"
   "github.com/nats-io/nats.go/micro"
-
-
-
 )
 
 // {{.Endpoint.Name}} is a struct for the {{.Endpoint.Name}} endpoint
@@ -41,6 +39,7 @@ import (
 // TODO: Add fields to the struct if needed for server dependencies and state
 type {{.Endpoint.Name}} struct {
   nc *nats.Conn
+  nm *service.TinyService
 }
 
 {{ $server := .Endpoint.Name }}{{$module := .Module}}{{range .Endpoint.GetAllMethods}}
@@ -67,9 +66,10 @@ func (s *{{$server}}) {{.Name}}( req micro.Request )  {
 
 // New{{.Endpoint.Name}} creates a new {{.Endpoint.Name}} struct
 // TODO: Add parameters to the the function if needed to set server dependencies and state
-func New{{.Endpoint.Name}}(nc *nats.Conn) *{{.Endpoint.Name}} {
+func New{{.Endpoint.Name}}(nc *nats.Conn, nm *service.TinyService) *{{.Endpoint.Name}} {
 	return &{{.Endpoint.Name}}{
     nc: nc,
+    nm: nm,
   }
 }
 	`)
@@ -128,7 +128,7 @@ func main() {
 
   {{range .Service.GetAllEndpoints}}
   // {{.Name}} handler
-  {{.ClientStructName  }}Handler := handlers.New{{.Name}}(nc)
+  {{.ClientStructName  }}Handler := handlers.New{{.Name}}(nc, nm)
 	// register {{.Name}}Handler
   {{$service := . }}{{range .GetAllMethods}}
 	nm.AddEndpoint("{{$service.Name}}{{.Name}}", micro.HandlerFunc({{$service.ClientStructName}}Handler.{{.Name}})){{end}}{{end}}
@@ -314,6 +314,11 @@ tasks:
     desc: Clean the project	
     cmds:
       - rm ./{{.SERVICE_NAME}}
+
+  types:
+    desc: Regenerate types
+    cmds:
+      - tiny gen --types
 
 `)
 }
