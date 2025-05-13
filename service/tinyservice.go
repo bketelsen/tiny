@@ -18,6 +18,9 @@ type TinyService struct {
 	sigs chan os.Signal
 	done chan bool
 
+	groupName string
+	group     micro.Group
+
 	// Config is the configuration for the NatsMicro instance.
 	micro.Config
 }
@@ -103,6 +106,13 @@ func WithStatsHandler(handler micro.StatsHandler) TinyServiceOption {
 	}
 }
 
+// WithGroup sets the group name for the NatsMicro instance.
+func WithGroup(groupName string) TinyServiceOption {
+	return func(nm *TinyService) {
+		nm.groupName = groupName
+	}
+}
+
 // NewTinyService creates a new NatsMicro instance with the given NATS connection and configuration.
 func NewTinyService(opts ...TinyServiceOption) (*TinyService, error) {
 	nm := &TinyService{}
@@ -137,6 +147,9 @@ func (nm *TinyService) AddEndpoint(name string, handler micro.Handler, opts ...m
 	if nm.svc == nil {
 		return nats.ErrNoServers
 	}
+	if nm.group != nil {
+		return nm.group.AddEndpoint(name, handler, opts...)
+	}
 	return nm.svc.AddEndpoint(name, handler, opts...)
 }
 
@@ -151,6 +164,10 @@ func (nm *TinyService) Init() error {
 		return err
 	}
 	log.Println(nm.svc.Info().ID)
+	if nm.groupName != "" {
+		nm.group = nm.svc.AddGroup(nm.groupName)
+
+	}
 	return err
 }
 

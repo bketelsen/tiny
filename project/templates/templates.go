@@ -113,6 +113,7 @@ func main() {
 		service.WithName("{{.Service.Name}}"),
 		service.WithVersion("0.0.1"),
 		service.WithDescription("{{.Service.Description}}"),
+    service.WithGroup("{{.Service.Name}}"),
 	)
 	if err != nil {
 		log.Fatal(err)

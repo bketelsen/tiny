@@ -1,11 +1,10 @@
 package main
 
 import (
+	"_example/handlers"
 	"log"
 	"os"
 	"strings"
-
-	"_example/handlers"
 
 	"github.com/bketelsen/tiny/service"
 	"github.com/nats-io/nats.go"
@@ -13,6 +12,7 @@ import (
 )
 
 func main() {
+
 	url, exists := os.LookupEnv("NATS_URL")
 	if !exists {
 		url = nats.DefaultURL
@@ -35,6 +35,7 @@ func main() {
 		service.WithName("search"),
 		service.WithVersion("0.0.1"),
 		service.WithDescription("something with spaces"),
+		service.WithGroup("search"),
 	)
 	if err != nil {
 		log.Fatal(err)
