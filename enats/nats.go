@@ -1,4 +1,6 @@
 // Package enats provides an embedded NATS server for testing purposes.
+// Lifted from https://github.com/delaneyj/toolbelt/
+// https://github.com/delaneyj/toolbelt/blob/main/LICENSE
 package enats
 
 import (
