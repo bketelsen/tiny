@@ -1,22 +1,23 @@
-service="search"
-description="something with spaces"
+service="users"
+description="User Management Service"
 
-type SearchRequest {
-  query string
-  type SearchType
-  page_number int
-  result_per_page int
+type GetRequest {
+  uid int
 }
 
-type SearchResponse {
-  results string
+type GetResponse {
+  first_name string
+  last_name string
 }
 
-enum SearchType {
-  SHALLOW = 0
-  DEEP = 1
+type UnlockRequest {
+  uid int
 }
 
-endpoint SearchService {
-  rpc Search(SearchRequest) returns (SearchResponse)
+type UnlockResponse {
+}
+
+endpoint User {
+  rpc Get(GetRequest) returns (GetResponse)
+  rpc Unlock(UnlockRequest) returns (UnlockResponse)
 }

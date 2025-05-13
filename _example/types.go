@@ -1,22 +1,20 @@
 package _example
 
-// SearchRequest is a struct for the SearchRequest type
-type SearchRequest struct { 
-  PageNumber int `json:"page_number"`
-  Query string `json:"query"`
-  ResultPerPage int `json:"result_per_page"`
-  Type SearchType `json:"type"`
-}
-// SearchResponse is a struct for the SearchResponse type
-type SearchResponse struct { 
-  Results string `json:"results"`
+// GetRequest is a struct for the GetRequest type
+type GetRequest struct {
+	UID int `json:"uid"`
 }
 
-// SearchType is a type for the SearchType enum
-type SearchType int
+// GetResponse is a struct for the GetResponse type
+type GetResponse struct {
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+}
 
-const (
-	SHALLOW SearchType = 0
-	DEEP SearchType = 1
-)
+// UnlockRequest is a struct for the UnlockRequest type
+type UnlockRequest struct {
+	UID int `json:"uid"`
+}
 
+// UnlockResponse is a struct for the UnlockResponse type
+type UnlockResponse struct{}

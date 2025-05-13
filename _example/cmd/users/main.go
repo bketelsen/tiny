@@ -1,10 +1,11 @@
 package main
 
 import (
-	"_example/handlers"
 	"log"
 	"os"
 	"strings"
+
+	"_example/handlers"
 
 	"github.com/bketelsen/tiny/service"
 	"github.com/nats-io/nats.go"
@@ -12,7 +13,6 @@ import (
 )
 
 func main() {
-
 	url, exists := os.LookupEnv("NATS_URL")
 	if !exists {
 		url = nats.DefaultURL
@@ -32,10 +32,10 @@ func main() {
 	}
 	nm, err := service.NewTinyService(
 		service.WithNatsConn(nc),
-		service.WithName("search"),
+		service.WithName("users"),
 		service.WithVersion("0.0.1"),
-		service.WithDescription("something with spaces"),
-		service.WithGroup("search"),
+		service.WithDescription("User Management Service"),
+		service.WithGroup("users"),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -47,11 +47,12 @@ func main() {
 	}
 	log.Println("Service initialized")
 
-	// SearchService handler
-	searchServiceHandler := handlers.NewSearchService(nc)
-	// register SearchServiceHandler
+	// User handler
+	userHandler := handlers.NewUser(nc)
+	// register UserHandler
 
-	nm.AddEndpoint("Search", micro.HandlerFunc(searchServiceHandler.Search))
+	nm.AddEndpoint("UserGet", micro.HandlerFunc(userHandler.Get))
+	nm.AddEndpoint("UserUnlock", micro.HandlerFunc(userHandler.Unlock))
 
 	err = nm.RunBlocking()
 	if err != nil {

@@ -18,16 +18,16 @@ tasks:
     sources:
       - ./**/*.go
     generates:
-      - ./search
+      - ./users
     cmds:
-      - go build ./cmd/search
+      - go build ./cmd/users
 
   install:
     desc: Install the binary locally
     sources:
       - ./**/*.go
     cmds:
-      - go install ./cmd/search 
+      - go install ./cmd/users 
 
   test:
     desc: Run tests
@@ -55,10 +55,10 @@ tasks:
     deps:
       - build
     cmds:
-      - ./search
+      - ./users
 
   clean:
     desc: Clean the project	
     cmds:
-      - rm ./search
+      - rm ./users
 

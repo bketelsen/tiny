@@ -163,10 +163,10 @@ func (nm *TinyService) Init() error {
 		log.Printf("Error initializing service: %v", err)
 		return err
 	}
-	log.Println(nm.svc.Info().ID)
+	log.Println("Service ID: ", nm.svc.Info().ID)
 	if nm.groupName != "" {
 		nm.group = nm.svc.AddGroup(nm.groupName)
-
+		log.Printf("Group %s created", nm.groupName)
 	}
 	return err
 }

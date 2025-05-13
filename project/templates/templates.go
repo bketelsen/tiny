@@ -43,7 +43,8 @@ type {{.Endpoint.Name}} struct {
   nc *nats.Conn
 }
 
-{{ $server := .Endpoint.Name }}{{$module := .Module}}{{range .Endpoint.GetAllMethods}}// {{.Name}} is the implementation of the {{$server}}.{{.Name}} endpoint
+{{ $server := .Endpoint.Name }}{{$module := .Module}}{{range .Endpoint.GetAllMethods}}
+ // {{.Name}} is the implementation of the {{$server}}.{{.Name}} endpoint
 func (s *{{$server}}) {{.Name}}( req micro.Request )  {
   // Unmarshal the request
   input := &{{$module}}.{{.RequestTypeName}}{}
@@ -130,12 +131,9 @@ func main() {
   {{.ClientStructName  }}Handler := handlers.New{{.Name}}(nc)
 	// register {{.Name}}Handler
   {{$service := . }}{{range .GetAllMethods}}
-	nm.AddEndpoint("{{.Name}}", micro.HandlerFunc({{$service.ClientStructName}}Handler.{{.Name}}))
-  {{end}}
-{{end}}
+	nm.AddEndpoint("{{$service.Name}}{{.Name}}", micro.HandlerFunc({{$service.ClientStructName}}Handler.{{.Name}})){{end}}{{end}}
 
-
-  	err = nm.RunBlocking()
+  err = nm.RunBlocking()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -164,8 +162,35 @@ func ServiceClientTemplate() []byte {
 	return []byte(`// Package {{.Module}} defines the types and interfaces for the {{.Service.Name}} service
 package {{.Module}}
 
+import (
+	"encoding/json"
+
+	"github.com/nats-io/nats.go"
+)
 
 
+{{$sn := .Service.Name}}{{range .Service.GetAllEndpoints}}
+// {{.Name}} Methods
+{{$endpoint := .Name}}
+{{range .GetAllMethods}}
+func {{$endpoint}}{{.Name}}(nc *nats.Conn, in {{.RequestTypeName}}) ({{.ResponseTypeName}}, error){
+	bb, err := json.Marshal(in)
+	if err != nil {
+		return {{.ResponseTypeName}}{}, err
+	}
+  var out {{.ResponseTypeName}}
+  resp, err := nc.Request("{{$sn}}.{{$endpoint}}{{.Name}}", bb, nats.DefaultTimeout)
+  if err != nil {
+    return {{.ResponseTypeName}}{}, err
+  }
+    	err = json.Unmarshal(resp.Data, &out)
+	if err != nil {
+		return {{.ResponseTypeName}}{}, err
+	}
+	return out, nil
+}
+{{end}}
+{{end}}
 
 `)
 }

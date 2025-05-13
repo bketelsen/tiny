@@ -26,7 +26,7 @@ go.work.sum
 .env
 
 # The binary output of the build tool
-/search
+/users
 
 # Taskfile
 /.task

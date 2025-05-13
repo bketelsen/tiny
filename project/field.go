@@ -12,6 +12,8 @@ type Field struct {
 
 func init() {
 	strcase.ConfigureAcronym("api", "API")
+	strcase.ConfigureAcronym("uid", "UID")
+	strcase.ConfigureAcronym("gid", "GID")
 	strcase.ConfigureAcronym("id", "ID")
 	strcase.ConfigureAcronym("uuid", "UUID")
 }
