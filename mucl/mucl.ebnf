@@ -1,0 +1,22 @@
+Definition = Service (Entry ";"*)* .
+Service = "service" <ident> "{" ServiceEntry* "}" .
+ServiceEntry = (Broker | Protocol | Registry | MServer | Transport) ";"* .
+Broker = "broker" <ident> .
+Protocol = "protocol" <ident> .
+Registry = "registry" <ident> .
+MServer = "server" <ident> .
+Transport = "transport" <ident> .
+Entry = ("import" <string>) | Message | Endpoint | Enum | ("option" Option) .
+Message = "type" <ident> "{" MessageEntry* "}" .
+MessageEntry = (Enum | ("option" Option) | Message | Field) ";"* .
+Enum = "enum" <ident> "{" (EnumEntry ";"*)* "}" .
+EnumEntry = EnumValue | ("option" Option) .
+EnumValue = <ident> "=" ("-"? <int>) ("[" Option ("," Option)* "]")? .
+Option = (("(" <ident> ("." <ident>)* ")") | (<ident> ("." <ident>)*)) ("." <ident> ("." <ident>)*)? "=" Value .
+Value = <string> | <float> | <int> | ("true" | "false") .
+Field = ("optional" | "required" | "repeated")? <ident> Type ("[" Option ("," Option)* "]")? .
+Type = Scalar | MapType | (<ident> ("." <ident>)*) .
+MapType = "map" "<" Type "," Type ">" .
+Endpoint = "endpoint" <ident> "{" (EndpointEntry ";"?)* "}" .
+EndpointEntry = Method .
+Method = "rpc" <ident> "(" "stream"? Type ")" "returns" "(" "stream"? Type ")" .

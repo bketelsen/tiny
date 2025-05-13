@@ -1,0 +1,22 @@
+service="search"
+description="something with spaces"
+
+type SearchRequest {
+  query string
+  type SearchType
+  page_number int
+  result_per_page int
+}
+
+type SearchResponse {
+  results string
+}
+
+enum SearchType {
+  SHALLOW = 0
+  DEEP = 1
+}
+
+endpoint SearchService {
+  rpc Search(SearchRequest) returns (SearchResponse)
+}

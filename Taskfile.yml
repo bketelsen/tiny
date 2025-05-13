@@ -1,0 +1,150 @@
+# https://taskfile.dev
+
+version: "3"
+
+env:
+  GO111MODULE: on
+  GOPROXY: https://proxy.golang.org,direct
+
+tasks:
+  dev:
+    desc: Setup git hooks and other development tools
+    cmds:
+      - cp -f scripts/pre-commit.sh .git/hooks/pre-commit
+      - go install github.com/caarlos0/svu@latest
+      - go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.0.2
+      - go install mvdan.cc/gofumpt@latest
+      - npm i docsify-cli -g
+
+  setup:
+    desc: Install dependencies
+    cmds:
+      - go mod tidy
+
+  build:
+    desc: Build the binary
+    sources:
+      - ./**/*.go
+    generates:
+      - ./tiny
+    cmds:
+      - go build .
+
+  install:
+    desc: Install the binary locally
+    sources:
+      - ./**/*.go
+    generates:
+      - ~/go/bin/tiny
+    cmds:
+      - go install .
+
+  example:
+    desc: Run the example
+    deps:
+      - install
+    dir: _example
+    cmds:
+      - tiny gen --force
+
+  test:
+    desc: Run tests
+    env:
+      LC_ALL: C
+    vars:
+      TEST_OPTIONS: '{{default "" .TEST_OPTIONS}}'
+      SOURCE_FILES: '{{default "./..." .SOURCE_FILES}}'
+      TEST_PATTERN: '{{default "." .TEST_PATTERN}}'
+    cmds:
+      - go test {{.TEST_OPTIONS}} -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt {{.SOURCE_FILES}} -run {{.TEST_PATTERN}} -timeout=15m
+
+  cover:
+    desc: Open the cover tool
+    cmds:
+      - go tool cover -html=coverage.txt
+
+  fmt:
+    desc: gofumpt all code
+    cmds:
+      - gofumpt -w -l .
+
+  lint:
+    desc: Lint the code with golangci-lint
+    cmds:
+      - golangci-lint run --config ./.golangci.yaml ./...
+
+  ci:
+    desc: Run all CI steps
+    cmds:
+      - task: setup
+      - task: build
+      - task: test
+      - task: lint
+  commit:
+    desc: Commit changes
+    deps:
+      - build
+      - fmt
+      - lint
+    preconditions:
+      - sh: '[ -x "$(command -v gum)" ]'
+        msg: gum is not installed, see https://github.com/charmbracelet/gum
+    cmds:
+      - ./scripts/commit.sh
+  default:
+    desc: Runs the default tasks
+    cmds:
+      - task: ci
+
+  release-check:
+    desc: Run goreleaser check
+    cmds:
+      - goreleaser check
+    silent: true
+    
+  release:
+    desc: Create a new tag
+    vars:
+      NEXT:
+        sh: svu n
+    prompt: "This will release {{.NEXT}}. Continue?"
+    preconditions:
+      - sh: '[ $(git symbolic-ref --short HEAD) = "main" ]'
+        msg: Not on main branch
+      - sh: "[ $(git status --porcelain=2 | wc -l) = 0 ]"
+        msg: "Git is dirty"
+    cmds:
+      - git tag {{.NEXT}}
+      - echo {{.NEXT}}
+      - git push origin --tags
+      - GOPROXY=proxy.golang.org go list -m github.com/bketelsen/tiny@{{.NEXT}}
+
+  goreleaser:
+    desc: Run GoReleaser either in snapshot or release mode
+    deps:
+      - build
+    vars:
+      SNAPSHOT:
+        sh: 'if [[ $GITHUB_REF != refs/tags/v* ]]; then echo "--snapshot"; fi'
+    cmds:
+      - goreleaser release --clean --timeout 60m {{.SNAPSHOT}}
+
+  docs:dev:
+    desc: Start the docs server
+    dir: docs
+    cmds:
+      - npm run docs:dev
+  
+  docs:build:
+    desc: Build the docs
+    dir: docs
+    cmds:
+      - npm run docs:build
+
+  docs:preview:
+    deps:
+      - docs:build
+    desc: Preview the docs
+    dir: docs
+    cmds:
+      - npm run docs:preview
