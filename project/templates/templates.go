@@ -170,7 +170,8 @@ package {{.Module}}
 }
 
 func ConfigTemplate() []byte {
-	return []byte(`service {{.Service}} {}
+	return []byte(`service="{{.Service}}"
+description="replace with a description of the service"
 
 type {{.Method}}Request {
   input string
