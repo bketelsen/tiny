@@ -58,6 +58,18 @@ func (p *Project) GenerateTypes() error {
 		return err
 	}
 
+	configFile, err := os.Create(fmt.Sprintf("%s/%s", typePath, "config.go"))
+	if err != nil {
+		return err
+	}
+	defer configFile.Close()
+
+	configTemplate := template.Must(template.New("configs").Parse(string(templates.ConfigurationTemplate())))
+	err = configTemplate.Execute(configFile, p)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

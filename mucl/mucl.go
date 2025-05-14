@@ -22,6 +22,21 @@ type Entry struct {
 	Endpoint    *Endpoint `| @@`
 	Enum        *Enum     `| @@`
 	Option      *Option   `| "option" @@`
+	Config      *Config   `| @@`
+}
+
+type Config struct {
+	Pos lexer.Position
+
+	Name    string         `"config" @Ident`
+	Entries []*ConfigEntry `"{" @@* "}"`
+}
+type ConfigEntry struct {
+	Pos lexer.Position
+
+	Enum   *Enum   `( @@`
+	Config *Config ` | @@`
+	Field  *Field  ` | @@ ) ";"*`
 }
 
 type Option struct {

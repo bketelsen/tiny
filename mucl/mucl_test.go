@@ -9,14 +9,14 @@ import (
 func TestGood(t *testing.T) {
 	tree, err := Parser.ParseString("", goodMucl)
 	require.NoError(t, err)
-	require.Equal(t, 6, len(tree.Entries))
+	require.Equal(t, 8, len(tree.Entries))
 	require.Equal(t, "helloworld", tree.ServiceName())
 
 	require.Equal(t, "something", tree.Description())
-	require.Equal(t, "SearchRequest", tree.Entries[2].Message.Name)
-	require.Equal(t, "SearchResponse", tree.Entries[3].Message.Name)
-	require.Equal(t, "SearchType", tree.Entries[4].Enum.Name)
-	require.Equal(t, "SearchService", tree.Entries[5].Endpoint.Name)
+	require.Equal(t, "SearchRequest", tree.Entries[4].Message.Name)
+	require.Equal(t, "SearchResponse", tree.Entries[5].Message.Name)
+	require.Equal(t, "SearchType", tree.Entries[6].Enum.Name)
+	require.Equal(t, "SearchService", tree.Entries[7].Endpoint.Name)
 }
 
 func TestEmbeddedGood(t *testing.T) {
@@ -65,6 +65,19 @@ func TestWithOptions(t *testing.T) {
 var goodMucl = `
 service="helloworld"
 description="something"
+
+config Server {
+  listen string
+  port int
+}
+
+config Database {
+  host string
+  port int
+  user string
+  password string
+  database string
+}
 
 type SearchRequest {
   query string

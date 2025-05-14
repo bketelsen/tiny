@@ -8,11 +8,25 @@ type Service struct {
 	EndpointMap map[string]*Endpoint
 	MessageMap  map[string]*Message
 	EnumMap     map[string]*Enum
+	ConfigMap   map[string]*Config
 }
 
 func (s *Service) GetEndpoint(name string) (*Endpoint, bool) {
 	endpoint, ok := s.EndpointMap[name]
 	return endpoint, ok
+}
+
+func (s *Service) GetConfig(name string) (*Config, bool) {
+	cfg, ok := s.ConfigMap[name]
+	return cfg, ok
+}
+
+func (s *Service) GetAllConfigs() []*Config {
+	configs := make([]*Config, 0, len(s.ConfigMap))
+	for _, cfg := range s.ConfigMap {
+		configs = append(configs, cfg)
+	}
+	return configs
 }
 
 func (s *Service) GetMessage(name string) (*Message, bool) {

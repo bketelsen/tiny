@@ -3,15 +3,18 @@ module github.com/bketelsen/tiny
 go 1.24.3
 
 require (
+	github.com/BurntSushi/toml v1.4.0
 	github.com/alecthomas/assert/v2 v2.11.0
 	github.com/alecthomas/participle/v2 v2.1.4
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/charmbracelet/huh v0.7.0
 	github.com/hashicorp/go-version v1.7.0
 	github.com/iancoleman/strcase v0.3.0
+	github.com/joho/godotenv v1.5.1
 	github.com/nats-io/nats-server/v2 v2.11.3
 	github.com/nats-io/nats.go v1.42.0
 	github.com/urfave/cli/v2 v2.27.6
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (

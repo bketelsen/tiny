@@ -6,7 +6,7 @@ func TypeTemplate() []byte {
 
 {{range $m,$v := .Service.MessageMap }}// {{ $m }} is a struct for the {{ $m }} type
 type {{ $m }} struct { {{range $f, $fv := $v.FieldMap}}
-  {{$fv.DeclarationName}} {{$fv.DeclarationType}} {{$fv.DeclarationTag}}{{end}}
+  {{$fv.DeclarationName}} {{$fv.DeclarationType}} {{$fv.DeclarationTag ""}}{{end}}
 }
 {{end}}
 {{range $m,$v := .Service.EnumMap}}// {{ $m }} is a type for the {{ $m }} enum
@@ -19,16 +19,33 @@ const ({{range $v.Values}}
 `)
 }
 
+func ConfigurationTemplate() []byte {
+	return []byte(`package {{.Module}}
+
+type Config struct {
+{{range $m,$v := .Service.ConfigMap }}// {{ $m }} is a struct for {{ $m }} configuration
+ {{ $m }} struct { {{range $f, $fv := $v.FieldMap}}
+  {{$fv.DeclarationName}} {{$fv.DeclarationType}} {{$fv.DeclarationTag $m}}{{end}}
+} {{$v.StructTag }}
+{{end}}
+NatsURL string ` + "`" + `env:"NATS_URL" env-description:"NATS URL" json:"nats_url" yaml:"nats_url"` + "`" + `
+}
+
+`)
+}
+
 func HandlerTemplate() []byte {
 	return []byte(`// Package handlers contains the implementation of the {{.Service.Name}} service
 package handlers
 	
 import (
 	"{{.Module}}"
-
+  "flag"
+  "fmt"
   "encoding/json"
   "log"
 
+  "github.com/bketelsen/tiny/cleanenv"
 	"github.com/bketelsen/tiny/service"
  	"github.com/nats-io/nats.go"
   "github.com/nats-io/nats.go/micro"
@@ -40,6 +57,7 @@ import (
 type {{.Endpoint.Name}} struct {
   nc *nats.Conn
   nm *service.TinyService
+  config *{{.Module}}.Config
 }
 
 {{ $server := .Endpoint.Name }}{{$module := .Module}}{{range .Endpoint.GetAllMethods}}
@@ -66,10 +84,11 @@ func (s *{{$server}}) {{.Name}}( req micro.Request )  {
 
 // New{{.Endpoint.Name}} creates a new {{.Endpoint.Name}} struct
 // TODO: Add parameters to the the function if needed to set server dependencies and state
-func New{{.Endpoint.Name}}(nc *nats.Conn, nm *service.TinyService) *{{.Endpoint.Name}} {
+func New{{.Endpoint.Name}}(nc *nats.Conn, nm *service.TinyService, config *{{.Module}}.Config) *{{.Endpoint.Name}} {
 	return &{{.Endpoint.Name}}{
     nc: nc,
     nm: nm,
+    config: config,
   }
 }
 	`)
@@ -79,6 +98,7 @@ func ServiceTemplate() []byte {
 	return []byte(`package main
 
 import (
+  "{{.Module}}"
 	"{{.Module}}/handlers"
 	"log"
 	"os"
@@ -90,21 +110,34 @@ import (
 
 )
 
+// Args command-line parameters
+type Args struct {
+	ConfigPath string
+}
+
+
 func main() {
 
-	url, exists := os.LookupEnv("NATS_URL")
-	if !exists {
-		url = nats.DefaultURL
-	} else {
-		url = strings.TrimSpace(url)
+	var cfg {{.Module}}.Config
+
+	args := ProcessArgs(&cfg)
+
+  // read configuration from the file and environment variables
+	if err := cleanenv.ReadConfig(args.ConfigPath, &cfg); err != nil {
+		log.Printf("Error reading configuration from file: %v", err)
+    err = cleanenv.ReadEnv(&cfg)
+    if err != nil {
+      log.Printf("Error reading configuration from environment variables: %v", err)
+      return
+    }
 	}
 
-	if strings.TrimSpace(url) == "" {
-		url = nats.DefaultURL
+	if strings.TrimSpace(cfg.NatsURL) == "" {
+		cfg.NatsURL = nats.DefaultURL
 	}
 
 	// Connect to the server
-	nc, err := nats.Connect(url)
+	nc, err := nats.Connect(cfg.NatsURL)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -126,9 +159,10 @@ func main() {
 	}
 	log.Println("Service initialized")
 
+
   {{range .Service.GetAllEndpoints}}
   // {{.Name}} handler
-  {{.ClientStructName  }}Handler := handlers.New{{.Name}}(nc, nm)
+  {{.ClientStructName  }}Handler := handlers.New{{.Name}}(nc, nm, &cfg)
 	// register {{.Name}}Handler
   {{$service := . }}{{range .GetAllMethods}}
 	nm.AddEndpoint("{{$service.Name}}{{.Name}}", micro.HandlerFunc({{$service.ClientStructName}}Handler.{{.Name}})){{end}}{{end}}
@@ -138,6 +172,25 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Println("Service stopped")
+}
+
+// ProcessArgs processes and handles CLI arguments
+func ProcessArgs(cfg interface{}) Args {
+	var a Args
+
+	f := flag.NewFlagSet("{{.Service.Name}}", 1)
+	f.StringVar(&a.ConfigPath, "c", "config.yml", "Path to configuration file")
+
+	fu := f.Usage
+	f.Usage = func() {
+		fu()
+		envHelp, _ := cleanenv.GetDescription(cfg, nil)
+		fmt.Fprintln(f.Output())
+		fmt.Fprintln(f.Output(), envHelp)
+	}
+
+	f.Parse(os.Args[1:])
+	return a
 }
 `)
 }

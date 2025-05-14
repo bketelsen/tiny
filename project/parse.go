@@ -11,11 +11,18 @@ func fromMuCL(mucl *mucl.Definition) (*Service, error) {
 	service.EndpointMap = make(map[string]*Endpoint)
 	service.MessageMap = make(map[string]*Message)
 	service.EnumMap = make(map[string]*Enum)
+	service.ConfigMap = make(map[string]*Config)
 
 	// parse enums
 	service.parseEnums(mucl)
 	// parse types
 	err := service.parseTypes(mucl)
+	if err != nil {
+		return nil, err
+	}
+
+	// parse configs
+	err = service.parseConfigs(mucl)
 	if err != nil {
 		return nil, err
 	}
@@ -33,6 +40,61 @@ func (s *Service) parseTypes(mucl *mucl.Definition) error {
 			return err
 		}
 	}
+	return nil
+}
+
+func (s *Service) parseConfigs(mucl *mucl.Definition) error {
+	// parse types
+	types := mucl.Configs()
+	for _, typ := range types {
+		err := s.parseConfig(typ)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (s *Service) parseConfig(m *mucl.Config) error {
+	// parse message
+	t := NewConfig(m.Name)
+	// parse embedded messages
+	for _, msg := range m.Configs() {
+		// parse message
+		err := s.parseConfig(msg)
+		if err != nil {
+			return err
+		}
+	}
+	t.FieldMap = make(map[string]*Field)
+	// parse fields
+	for _, field := range m.Fields() {
+		f := &Field{
+			Name:     field.Name,
+			TypeName: field.Type.String(),
+			Required: field.Required,
+			Repeated: field.Repeated,
+		}
+		t.FieldMap[field.Name] = f
+	}
+	// parse enums
+	for _, enum := range m.Enums() {
+		e := &Enum{
+			Name: enum.Name,
+		}
+		// parse enum values
+		for _, value := range enum.Values {
+			v := &KeyValue{
+				Key:   value.Value.Key,
+				Value: value.Value.Value,
+			}
+			e.Values = append(e.Values, v)
+		}
+		s.EnumMap[enum.Name] = e
+	}
+
+	// add message to map
+	s.ConfigMap[m.Name] = t
 	return nil
 }
 

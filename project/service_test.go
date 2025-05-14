@@ -16,17 +16,23 @@ func TestGoodService(t *testing.T) {
 	require.Equal(t, "helloworld", svc.Name)
 }
 
-func TestStreamService(t *testing.T) {
-	def, err := mucl.Parser.ParseString("", goodStreamMucl)
+func TestConfigs(t *testing.T) {
+	def, err := mucl.Parser.ParseString("", goodMucl)
 	require.NoError(t, err)
 	svc, err := fromMuCL(def)
 	require.NoError(t, err)
-	require.Equal(t, "hellostream", svc.Name)
+	require.Equal(t, 1, len(svc.ConfigMap))
 }
 
 var goodMucl = `
 service="helloworld"
 description="something"
+
+config Server {
+  listen string
+  port int
+}
+
 
 type SearchRequest {
   query string

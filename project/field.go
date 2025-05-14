@@ -1,6 +1,10 @@
 package project
 
-import "github.com/iancoleman/strcase"
+import (
+	"strings"
+
+	"github.com/iancoleman/strcase"
+)
 
 type Field struct {
 	Optional bool
@@ -16,6 +20,7 @@ func init() {
 	strcase.ConfigureAcronym("gid", "GID")
 	strcase.ConfigureAcronym("id", "ID")
 	strcase.ConfigureAcronym("uuid", "UUID")
+	strcase.ConfigureAcronym("db", "DB")
 }
 
 func (f *Field) DeclarationType() string {
@@ -32,6 +37,21 @@ func (f *Field) DeclarationName() string {
 	return strcase.ToCamel(f.Name)
 }
 
-func (f *Field) DeclarationTag() string {
-	return "`json:\"" + strcase.ToSnake(f.Name) + "\"`"
+func (f *Field) DeclarationTag(strct string) string {
+	var sb strings.Builder
+	sb.WriteString("`json:\"")
+	sb.WriteString(strcase.ToSnake(f.Name))
+	sb.WriteString("\" yaml:\"")
+	sb.WriteString(strcase.ToSnake(f.Name))
+	sb.WriteString("\"")
+	if strct != "" {
+		sb.WriteString(" env:\"")
+		sb.WriteString(strcase.ToScreamingSnake(strct + " " + f.Name))
+		sb.WriteString("\"")
+		sb.WriteString(" env-description:\"")
+		sb.WriteString(strct + " " + f.Name)
+		sb.WriteString("\"")
+	}
+	sb.WriteString("`")
+	return sb.String()
 }

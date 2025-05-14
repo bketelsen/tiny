@@ -39,6 +39,19 @@ func (d *Definition) Messages() []*Message {
 	return messages
 }
 
+func (d *Definition) Configs() []*Config {
+	if d == nil {
+		return nil
+	}
+	var configs []*Config
+	for _, entry := range d.Entries {
+		if entry.Config != nil {
+			configs = append(configs, entry.Config)
+		}
+	}
+	return configs
+}
+
 func (d *Definition) Servers() []*Endpoint {
 	if d == nil {
 		return nil
