@@ -37,6 +37,19 @@ func (p *Project) Tidy() error {
 	return nil
 }
 
+func (p *Project) Format() error {
+	cmd := exec.Command("go", "fmt", "./...")
+	cmd.Dir = p.outDir
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		return fmt.Errorf("failed to run go fmt: %v", err)
+	}
+
+	return nil
+}
+
 func (p *Project) GenerateTypes() error {
 	typePath := p.outDir
 	// Check if the directory exists, if not create it

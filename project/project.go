@@ -121,6 +121,10 @@ func (p *Project) Apply() error {
 			return fmt.Errorf("failed to generate .gitignore: %v", err)
 		}
 	}
+	err = p.Format()
+	if err != nil {
+		return fmt.Errorf("failed to format code: %v", err)
+	}
 	return p.Tidy()
 }
 

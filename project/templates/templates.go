@@ -40,12 +40,9 @@ package handlers
 	
 import (
 	"{{.Module}}"
-  "flag"
-  "fmt"
   "encoding/json"
   "log"
 
-  "github.com/bketelsen/tiny/cleanenv"
 	"github.com/bketelsen/tiny/service"
  	"github.com/nats-io/nats.go"
   "github.com/nats-io/nats.go/micro"
@@ -100,10 +97,13 @@ func ServiceTemplate() []byte {
 import (
   "{{.Module}}"
 	"{{.Module}}/handlers"
+  "flag"
+  "fmt"
 	"log"
 	"os"
 	"strings"
 
+  "github.com/bketelsen/tiny/cleanenv"
   "github.com/bketelsen/tiny/service"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/micro"
