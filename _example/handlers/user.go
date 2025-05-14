@@ -16,8 +16,9 @@ import (
 // It is the server implementation of the UserServer interface
 // TODO: Add fields to the struct if needed for server dependencies and state
 type User struct {
-	nc *nats.Conn
-	nm *service.TinyService
+	nc     *nats.Conn
+	nm     *service.TinyService
+	config *_example.Config
 }
 
 // Unlock is the implementation of the User.Unlock endpoint
@@ -64,9 +65,10 @@ func (s *User) Get(req micro.Request) {
 
 // NewUser creates a new User struct
 // TODO: Add parameters to the the function if needed to set server dependencies and state
-func NewUser(nc *nats.Conn, nm *service.TinyService) *User {
+func NewUser(nc *nats.Conn, nm *service.TinyService, config *_example.Config) *User {
 	return &User{
-		nc: nc,
-		nm: nm,
+		nc:     nc,
+		nm:     nm,
+		config: config,
 	}
 }

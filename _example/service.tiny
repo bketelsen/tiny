@@ -21,3 +21,8 @@ endpoint User {
   rpc Get(GetRequest) returns (GetResponse)
   rpc Unlock(UnlockRequest) returns (UnlockResponse)
 }
+
+config Cache {
+  host string
+  port int
+}
