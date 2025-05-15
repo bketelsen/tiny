@@ -20,11 +20,11 @@ builds:
       - arm64
     binary: tiny
     id: tiny
-    main: ./cmd/tiny
+
     # Default: '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser'.
     # Templates: allowed.
     ldflags:
-      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser
+      - -s -w -X github.com/bketelsen/tiny/cmd.version={{.Version}} -X github.com/bketelsen/tiny/cmd.commit={{.Commit}} -X github.com/bketelsen/tiny/cmd.date={{ .CommitDate }} -X github.com/bketelsen/tiny/cmd.builtBy=goreleaser
 archives:
   - formats: [ 'tar.gz' ]
     # this name template makes the OS and Arch compatible with the results of `uname`.
@@ -85,11 +85,12 @@ release:
 
     ---
 
-    Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
+    A developer toolkit for building NATS-based microservices in Go.
+
 nfpms:
   - file_name_template: "{{ .ProjectName }}_{{ .Arch }}"
     homepage: https://github.com/bketelsen/tiny
-    description: Modify your fork of an upstream repository with surgical precision.
+    description: A developer toolkit for building NATS-based microservices in Go.
     maintainer: Brian Ketelsen <bketelsen@gmail.com>
     license: MIT
     vendor: Brian Ketelsen

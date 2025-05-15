@@ -37,3 +37,6 @@ coverage.txt
 node_modules
 
 /_reference
+
+# goreleaser
+/dist

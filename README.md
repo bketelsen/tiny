@@ -41,6 +41,7 @@ tiny gen --definition <file.tiny> [--types] [--force]
 ```
 
 Options:
+
 - `--types`: Generate only type definitions
 - `--force`: Overwrite existing files
 
@@ -64,7 +65,7 @@ Comprehensive documentation is available at the [tiny documentation site](https:
 
 ### Prerequisites
 
-- Go 1.16 or newer
+- Go 1.24 or newer
 - [Task](https://taskfile.dev) for development workflows
 
 ### Build from source
