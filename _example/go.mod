@@ -3,7 +3,7 @@ module _example
 go 1.24.3
 
 require (
-	github.com/bketelsen/tiny v0.1.0
+	github.com/bketelsen/tiny v0.2.0
 	github.com/nats-io/nats.go v1.42.0
 )
 

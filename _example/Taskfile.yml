@@ -2,9 +2,11 @@
 
 version: "3"
 
-env:
-  GO111MODULE: on
-  GOPROXY: https://proxy.golang.org,direct
+vars:
+  REGISTRY: your.registry.com
+  OWNER: your-org
+  VERSION:
+    sh: svu n || echo "dev"
 
 tasks:
 
@@ -27,7 +29,7 @@ tasks:
     sources:
       - ./**/*.go
     cmds:
-      - go install ./cmd/users 
+      - go install ./cmd/users
 
   test:
     desc: Run tests
@@ -50,6 +52,11 @@ tasks:
     cmds:
       - task: ci
 
+  docker:
+    desc: Build the docker image
+    cmds:
+      - docker build -t {{.REGISTRY}}/{{.OWNER}}/users:{{.VERSION}} .
+
   run:
     desc: Run the service
     deps:
@@ -58,7 +65,7 @@ tasks:
       - ./users
 
   clean:
-    desc: Clean the project	
+    desc: Clean the project
     cmds:
       - rm ./users
 

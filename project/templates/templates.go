@@ -37,7 +37,7 @@ NatsURL string ` + "`" + `env:"NATS_URL" env-description:"NATS URL" json:"nats_u
 func HandlerTemplate() []byte {
 	return []byte(`// Package handlers contains the implementation of the {{.Service.Name}} service
 package handlers
-	
+
 import (
 	"{{.Module}}"
   "encoding/json"
@@ -67,7 +67,7 @@ func (s *{{$server}}) {{.Name}}( req micro.Request )  {
     log.Println("Error unmarshalling request: ", err)
     return
   }
-  
+
   // Create the response
   rsp := &{{$module}}.{{.ResponseTypeName}}{}
   // TODO: implement the endpoint logic
@@ -76,7 +76,7 @@ func (s *{{$server}}) {{.Name}}( req micro.Request )  {
 		log.Println("Error responding:", err)
 		return
 	}
-	return 
+	return
 }{{end}}
 
 // New{{.Endpoint.Name}} creates a new {{.Endpoint.Name}} struct
@@ -267,7 +267,7 @@ endpoint {{.Endpoint}} {
 }
 
 func GitIgnoreTemplate() []byte {
-	return []byte(`.DS_Store  
+	return []byte(`.DS_Store
 # If you prefer the allow list template instead of the deny list, see community template:
 # https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
 #
@@ -308,9 +308,11 @@ func TaskfileTemplate() []byte {
 
 version: "3"
 
-env:
-  GO111MODULE: on
-  GOPROXY: https://proxy.golang.org,direct
+vars:
+  REGISTRY: your.registry.com
+  OWNER: your-org
+  VERSION:
+    sh: svu n || echo "dev"
 
 tasks:
 
@@ -324,16 +326,16 @@ tasks:
     sources:
       - ./**/*.go
     generates:
-      - ./{{.SERVICE_NAME}}
+      - ./[[.SERVICE_NAME]]
     cmds:
-      - go build ./cmd/{{.SERVICE_NAME}}
+      - go build ./cmd/[[.SERVICE_NAME]]
 
   install:
     desc: Install the binary locally
     sources:
       - ./**/*.go
     cmds:
-      - go install ./cmd/{{.SERVICE_NAME}} 
+      - go install ./cmd/[[.SERVICE_NAME]]
 
   test:
     desc: Run tests
@@ -356,22 +358,65 @@ tasks:
     cmds:
       - task: ci
 
+  docker:
+    desc: Build the docker image
+    cmds:
+      - docker build -t {{.REGISTRY}}/{{.OWNER}}/[[.SERVICE_NAME]]:{{.VERSION}} .
+
   run:
     desc: Run the service
     deps:
       - build
     cmds:
-      - ./{{.SERVICE_NAME}}
+      - ./[[.SERVICE_NAME]]
 
   clean:
-    desc: Clean the project	
+    desc: Clean the project
     cmds:
-      - rm ./{{.SERVICE_NAME}}
+      - rm ./[[.SERVICE_NAME]]
 
   types:
     desc: Regenerate types
     cmds:
       - tiny gen --types
 
+`)
+}
+
+func DockerfileTemplate() []byte {
+	return []byte(`# --- Build stage ---
+FROM golang:1.24-alpine AS builder
+
+WORKDIR /app
+
+# Install git for Go modules if needed
+RUN apk add --no-cache git
+
+# Copy go mod files and download dependencies
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy the source code
+COPY . .
+
+# Build the binary
+RUN CGO_ENABLED=0 GOOS=linux go build -o {{.SERVICE_NAME}} ./cmd/{{.SERVICE_NAME}}
+
+# --- Final stage ---
+FROM alpine:3.21
+
+WORKDIR /app
+
+# Copy the binary from the builder
+COPY --from=builder /app/{{.SERVICE_NAME}} .
+
+# Copy config file if needed (optional)
+# COPY config.yml .
+
+# Set environment variables if needed
+# ENV NATS_URL=nats://nats:4222
+
+# Run the binary
+ENTRYPOINT ["./{{.SERVICE_NAME}}"]
 `)
 }

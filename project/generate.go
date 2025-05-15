@@ -175,8 +175,32 @@ func (p *Project) GenerateTaskfile() error {
 		}
 		defer taskFile.Close()
 
-		infraTemplate := template.Must(template.New("type").Parse(string(templates.TaskfileTemplate())))
+		infraTemplate := template.Must(template.New("type").
+			Delims("[[", "]]").
+			Parse(string(templates.TaskfileTemplate())))
 		err = infraTemplate.Execute(taskFile,
+			map[string]interface{}{
+				"SERVICE_NAME": p.Service.DirectoryName(),
+			})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (p *Project) GenerateDockerfile() error {
+	dockerfilePath := filepath.Join(p.outDir, "Dockerfile")
+
+	if p.safeWriteFile(dockerfilePath) {
+		dockerFile, err := os.Create(dockerfilePath)
+		if err != nil {
+			return err
+		}
+		defer dockerFile.Close()
+
+		dockerTemplate := template.Must(template.New("docker").Parse(string(templates.DockerfileTemplate())))
+		err = dockerTemplate.Execute(dockerFile,
 			map[string]interface{}{
 				"SERVICE_NAME": p.Service.DirectoryName(),
 			})

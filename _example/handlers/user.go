@@ -21,27 +21,6 @@ type User struct {
 	config *_example.Config
 }
 
-// Unlock is the implementation of the User.Unlock endpoint
-func (s *User) Unlock(req micro.Request) {
-	// Unmarshal the request
-	input := &_example.UnlockRequest{}
-	err := json.Unmarshal(req.Data(), input)
-	if err != nil {
-		log.Println("Error unmarshalling request: ", err)
-		return
-	}
-
-	// Create the response
-	rsp := &_example.UnlockResponse{}
-	// TODO: implement the endpoint logic
-	err = req.RespondJSON(rsp)
-	if err != nil {
-		log.Println("Error responding:", err)
-		return
-	}
-	return
-}
-
 // Get is the implementation of the User.Get endpoint
 func (s *User) Get(req micro.Request) {
 	// Unmarshal the request
@@ -54,6 +33,27 @@ func (s *User) Get(req micro.Request) {
 
 	// Create the response
 	rsp := &_example.GetResponse{}
+	// TODO: implement the endpoint logic
+	err = req.RespondJSON(rsp)
+	if err != nil {
+		log.Println("Error responding:", err)
+		return
+	}
+	return
+}
+
+// Unlock is the implementation of the User.Unlock endpoint
+func (s *User) Unlock(req micro.Request) {
+	// Unmarshal the request
+	input := &_example.UnlockRequest{}
+	err := json.Unmarshal(req.Data(), input)
+	if err != nil {
+		log.Println("Error unmarshalling request: ", err)
+		return
+	}
+
+	// Create the response
+	rsp := &_example.UnlockResponse{}
 	// TODO: implement the endpoint logic
 	err = req.RespondJSON(rsp)
 	if err != nil {

@@ -116,6 +116,10 @@ func (p *Project) Apply() error {
 		if err != nil {
 			return fmt.Errorf("failed to generate taskfile: %v", err)
 		}
+		err = p.GenerateDockerfile()
+		if err != nil {
+			return fmt.Errorf("failed to generate dockerfile: %v", err)
+		}
 		err = p.GenerateGitIgnore()
 		if err != nil {
 			return fmt.Errorf("failed to generate .gitignore: %v", err)
