@@ -1,8 +1,8 @@
 # Installing tiny
 
-You can install tiny by downloading a release from GitHub or by using our installer script.
+You can install tiny by downloading a release from GitHub or by using the installer script.
 
-Choose your adventure below.
+*Choose your adventure below.*
 
 ## Direct Download
 

@@ -31,7 +31,7 @@ import { defineAdditionalConfig, type DefaultTheme } from 'vitepress'
 
 
 export default defineAdditionalConfig({
-  description: 'Developer tools for go-micro',
+  description: 'A development toolkit for Go microservices over NATS',
   title: 'tiny',
   cleanUrls: true,
   base: '/tiny/',
@@ -70,7 +70,7 @@ function nav(): DefaultTheme.NavItem[] {
       activeMatch: '/reference/'
     },
     {
-      text: "mu",
+      text: "tiny",
       items: [
         {
           text: 'Contributing',
